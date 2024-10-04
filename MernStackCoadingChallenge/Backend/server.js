@@ -1,54 +1,47 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
 const axios = require('axios');
 
-
+const app = express();
 const uri = 'https://s3.amazonaws.com/roxiler.com/product_transaction.json';
 app.use(cors());
 
-app.get('/',(req,res)=>{
-    const fetchUsers = async () => {
-        try {
-            const response = await axios.get(uri);
-            //console.log(response.data);
-            transactions = response.data
-            res.send(response.data)
-            return (response)
-        } catch (error) {
-            console.error('There was an error fetching the users:', error);
-        }
-    };
+const fetchTransactions = async () => {
+    try {
+        const response = await axios.get(uri);
+        return response.data; // Return the transactions data
+    } catch (error) {
+        console.error('Error fetching transactions:', error);
+        return []; // Return an empty array on error
+    }
+};
 
-    fetchUsers();
+app.get('/', async (req, res) => {
+    const transactions = await fetchTransactions();
+    res.send(transactions);
+});
 
-})
+app.get('/statistics', async (req, res) => {
+    const month = req.query.month;
+    const transactions = await fetchTransactions();
 
-app.get('/statistics', (req, res) => {
+    if (!transactions.length) {
+        return res.json({ totalSales: 0, totalSold: 0, totalNotSold: 0 });
+    }
 
-    const fetchUsers = async () => {
-        try {
-            const response = await axios.get(uri);
-            const transactions=response.data
-            return (response)
-        } catch (error) {
-            console.error('There was an error fetching the users:', error);
-        }
-    };
-
-    fetchUsers();
-
-    const month = req.query.month; 
-    console.log("Selected Month = ",month)
-    console.log(transactions)
-    const monthRegex = new RegExp(`^${month}`); 
-
-    const filteredTransactions = transactions.filter(transaction => {
-        const date = new Date(transaction.dateOfSale);
-        console.log(date)
-        const transactionMonth = String(date.getMonth() + 1).padStart(2, '0'); 
-        return transactionMonth == month; 
-    });
+    let filteredTransactions;
+    
+    if (month === '00') {
+        filteredTransactions = transactions; // Include all transactions
+        
+    } else {
+        const monthRegex = new RegExp(`^${month}`);
+        filteredTransactions = transactions.filter(transaction => {
+            const date = new Date(transaction.dateOfSale);
+            const transactionMonth = String(date.getMonth() + 1).padStart(2, '0');
+            return transactionMonth === month;
+        });
+    }
 
     const totalSales = filteredTransactions.reduce((sum, transaction) => sum + transaction.price, 0);
     const totalSold = filteredTransactions.filter(transaction => transaction.sold).length;
@@ -61,47 +54,50 @@ app.get('/statistics', (req, res) => {
     });
 });
 
-app.get('/statistics/bar', (req, res) => {
 
-    const fetchUsers = async () => {
-        try {
-            const response = await axios.get(uri);
-            const transactions=response.data
-            return (response)
-        } catch (error) {
-            console.error('There was an error fetching the users:', error);
-        }
-    };
+app.get('/statistics/bar', async (req, res) => {
+    const month = req.query.month;
+    const transactions = await fetchTransactions();
 
-    fetchUsers();
-
-    const month = req.query.month; 
-    console.log("Selected Month = ",month)
-    console.log(transactions)
-    const monthRegex = new RegExp(`^${month}`); 
+    if (!transactions.length) {
+        return res.json([]);
+    }
 
     const filteredTransactions = transactions.filter(transaction => {
         const date = new Date(transaction.dateOfSale);
-        console.log(date)
-        const transactionMonth = String(date.getMonth() + 1).padStart(2, '0'); 
-        return transactionMonth == month; 
+        const transactionMonth = String(date.getMonth() + 1).padStart(2, '0');
+        return transactionMonth === month;
     });
 
-    const totalSales = filteredTransactions.reduce((sum, transaction) => sum + transaction.price, 0);
-    const totalSold = filteredTransactions.filter(transaction => transaction.sold).length;
-    const totalNotSold = filteredTransactions.filter(transaction => !transaction.sold).length;
-
-    res.json({
-        totalSales,
-        totalSold,
-        totalNotSold,
-    });
+    res.json(filteredTransactions);
 });
 
-app.get('/var-chart', (req, res) => {
-  res.json({ message: 'This works!' });
+app.get('/statistics/pie', async (req, res) => {
+    const selectedMonth = req.query.month;
+    const transactions = await fetchTransactions();
+
+    const categoryCounts = {};
+
+    transactions.forEach(transaction => {
+        const date = new Date(transaction.dateOfSale);
+        const transactionMonth = String(date.getMonth() + 1).padStart(2, '0');
+
+        if (transactionMonth === selectedMonth) {
+            const category = transaction.category; // Assuming 'category' is a field in your transaction data
+            if (category) {
+                categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+            }
+        }
+    });
+
+    const result = Object.entries(categoryCounts).map(([category, count]) => ({
+        category,
+        count,
+    }));
+
+    res.json(result);
 });
 
 app.listen(5000, () => {
-  console.log('Server running on port 5000');
+    console.log('Server running on port 5000');
 });
