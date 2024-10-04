@@ -1,0 +1,100 @@
+.main-container {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.sub-container {
+    width: 90%;
+    margin: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #ddd;
+}
+
+.description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* Limit to 2 lines */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Show ellipsis */
+    max-height: 3em; /* Adjust for line height */
+    line-height: 1.5em; /* Set line height */
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 10px 15px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.pagination button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination span {
+    align-self: center;
+    font-size: 16px;
+}
+.heading{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    background-color: red;
+}
+
+.filters-container{
+    display: flex;
+    justify-content: space-between;
+}
+
+.filters-sub-container{
+    display: flex;
+}
+
+.filter-name{
+    font-size: 16px;
+}
+
+.input-bar{
+    height: 40px;
+    width: 400px;
+    border-radius: 10px;
+    margin-left: 10px;
+    padding-left: 10px;
+    outline: 0px;
+}
